@@ -51,14 +51,14 @@ async def get_proxy_playwright(keyword):
         for browser_type in [p.chromium]:
             browser = await browser_type.launch(args=['--lang=zh-CN'])
             page = await browser.new_page()
-            await page.goto(f"http://www.google.com/search?q={keyword}")
-            await page.screenshot(path=f'example-{browser_type.name}.png')
+            await page.goto(f"https://www.bing.com/search?q={keyword}",timeout=600000)
+            # await page.screenshot(path=f'example-{browser_type.name}.png')
             # 等待页面加载完成
-            await page.wait_for_load_state()
+            await page.wait_for_load_state(timeout=600000)
             
             # 获取渲染后的网页源代码
             bodytext =await  page.locator("body").inner_text()
-            await page.screenshot(path=f'example-{browser_type.name}.png')
+            # await page.screenshot(path=f'example-{browser_type.name}.png')
             await browser.close()
             return "请根据以下获取到的网页内容回答问题'"+keyword+"'\n"+bodytext
 
