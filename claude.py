@@ -33,7 +33,7 @@ async def chat(body: ClaudeChatPrompt):
     reply = await client.get_reply()
     print(reply)
     replyres  =await  get_proxy(reply)
-    while replyres != reply:
+    while replyres.strip() != reply.strip():
         await  client.chat( replyres)
         reply = await client.get_reply()
         replyres =await  get_proxy(reply)

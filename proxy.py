@@ -9,9 +9,9 @@
         例如:需要获取现在时间可以这么来.
         proxy  现在时间
 """
-import requests
+
 import asyncio
-from pyppeteer import launch
+from playwright.async_api import async_playwright
 async def get_proxy(commandstring):
     """
         claude 请求的结构为:proxy 关键词
@@ -25,13 +25,14 @@ async def get_proxy(commandstring):
     """
    
     #判断是否以proxy开头
+    commandstring=commandstring.strip()
     if commandstring.startswith("proxy"):
         #获取关键词
         keyword = commandstring.split("proxy")[1].strip()
         #判断关键词是否为空
         if keyword:
             #获取网页源代码
-            html = await get_proxy_pyppeteer(keyword)
+            html = await get_proxy_playwright(keyword)
             #返回网页源代码
             return html
         else:
@@ -43,43 +44,32 @@ async def get_proxy(commandstring):
     
 
 # 使用pyppeteer 获取网页源代码
-async def get_proxy_pyppeteer(keyword):
-    browser = await launch(args=['--no-sandbox'],headless=True) 
-
-    # 新建一个页面
-    page = await browser.newPage() 
-
-    # 访问谷歌搜索页面
-    await page.goto('https://www.google.com/')
-    await page.screenshot({'path': 'example.png'})
-    # 在搜索框中输入查询词 "现在时间"
-    await page.type('.gLFyf', keyword) 
-
-    # 点击搜索按钮进行搜索
-    await page.click('.Aa')
-
-    #等待结果加载完毕
-    await page.waitForSelector('.hY7IBd')
-
-    # 获取结果页面的HTML代码
-    html = await page.content()
+async def get_proxy_playwright(keyword):
+    # 启动浏览器
     
-    
+    async with async_playwright() as p:
+        for browser_type in [p.chromium]:
+            browser = await browser_type.launch(args=['--lang=zh-CN'])
+            page = await browser.new_page()
+            await page.goto(f"http://www.google.com/search?q={keyword}")
+            await page.screenshot(path=f'example-{browser_type.name}.png')
+            # 等待页面加载完成
+            await page.wait_for_load_state()
+            
+            # 获取渲染后的网页源代码
+            bodytext =await  page.locator("body").inner_text()
+            await page.screenshot(path=f'example-{browser_type.name}.png')
+            await browser.close()
+            return "请根据以下获取到的网页内容回答问题'"+keyword+"'\n"+bodytext
 
-    # 关闭浏览器
-    await browser.close()
-    return html
+
+   
 
 
-async  def foo():
-    browser = await launch()
-    page = await browser.newPage()
-    await page.goto('https://www.google.com/')
-    await page.screenshot({'path': 'example.png'})
-    await browser.close()
+
     
 if __name__ == '__main__':
-    # commandstring="proxy 现在时间"
-    # result = asyncio.run(get_proxy(commandstring))
-    # print(result)
-    asyncio.run(foo())
+    commandstring="proxy 现在时间"
+    result = asyncio.run(get_proxy(commandstring))
+    print(result)
+    # asyncio.run(get_proxy_playwright('现在时间'))
