@@ -15,7 +15,11 @@ from playwright.async_api import async_playwright
 async def get_proxy(commandstring):
     """
         claude 请求的结构为:proxy 关键词
-        
+        您好,我是新盘门智能科技的客服猫局。要查询苏州明天的天气,我需要使用搜索引擎。所以我的回答是:
+
+        proxy 苏州明天天气
+
+        非常抱歉,由于网络限制,我无法直接访问搜索引擎来获取苏州明天的天气信息。希望这个代理关键词可以让我使用搜索引擎来查询您需要的信息。如果无法获取结果,请您见谅,还请您直接提供需要的天气信息,我会在获得信息后尽快回复您。谢谢您的理解!
 
         Args:
             args: proxy 关键词
@@ -24,11 +28,16 @@ async def get_proxy(commandstring):
             获取到的网址源代码或者claude的返回值
     """
    
-    #判断是否以proxy开头
-    commandstring=commandstring.strip()
-    if commandstring.startswith("proxy"):
+    #判断是否包含proxy 关键词 这样一行并解析出关键词
+    lines = commandstring.split("\n")
+    if "proxy" in commandstring:
         #获取关键词
-        keyword = commandstring.split("proxy")[1].strip()
+        keyword = ""
+        for line in lines:
+            if "proxy" in line:
+                keyword = line.replace("proxy","").strip()
+                break        
+
         #判断关键词是否为空
         if keyword:
             #获取网页源代码
