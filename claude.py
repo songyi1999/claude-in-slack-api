@@ -7,7 +7,7 @@ from fastapi.responses import StreamingResponse
 from sse_starlette.sse import EventSourceResponse
 
 from slack import client
-
+from  proxy import get_proxy
 app = FastAPI()
 server_token = getenv("SERVER_TOKEN")
 
@@ -30,9 +30,16 @@ class ClaudeChatPrompt(BaseModel):
 async def chat(body: ClaudeChatPrompt):
     await client.open_channel()
     await client.chat(body.prompt)
-
+    reply = await client.get_reply()
+    print(reply)
+    replyres  =await  get_proxy(reply)
+    while replyres != reply:
+        await  client.chat( replyres)
+        reply = await client.get_reply()
+        replyres =await  get_proxy(reply)
+    
     return {
-        "claude": await client.get_reply()
+        "claude": replyres
     }
 
 # add --no-buffer to see the effect of streaming
